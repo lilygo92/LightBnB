@@ -16,21 +16,12 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  // let resolvedUser = null;
-  // for (const userId in users) {
-  //   const user = users[userId];
-  //   if (user && user.email.toLowerCase() === email.toLowerCase()) {
-  //     resolvedUser = user;
-  //   }
-  // }
-  // return Promise.resolve(resolvedUser);
   return pool
     .query(
       `SELECT * FROM users
       WHERE email = $1;`,
       [email])
     .then((result) => {
-      console.log(result.rows[0]);
       return(result.rows[0]);
     })
     .catch((err) => {
@@ -50,7 +41,6 @@ const getUserWithId = function (id) {
       WHERE id = $1;`,
       [id])
     .then((result) => {
-      console.log(result.rows[0]);
       return(result.rows[0]);
     })
     .catch((err) => {
@@ -94,7 +84,6 @@ const getAllReservations = function (guest_id, limit = 10) {
       LIMIT $2;`,
       [guest_id, limit])
     .then((result) => {
-      // console.log(result.rows);
       return (result.rows);
     })
     .catch((err) => {
@@ -110,31 +99,15 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-// const getAllProperties = (options, limit = 10) => {
-//   return pool
-//     .query(
-//       `SELECT * FROM properties LIMIT $1;`,
-//       [limit])
-//     .then((result) => {
-//       // console.log(result.rows);
-//       return (result.rows);
-//     })
-//     .catch((err) => {
-//       console.log(err.message);
-//     });
-// };
 
 const getAllProperties = function (options, limit = 10) {
-  // 1
   const queryParams = [];
-  // 2
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
   JOIN property_reviews ON properties.id = property_id
   `;
 
-  // 3
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     queryString += `WHERE city LIKE $${queryParams.length} `;
@@ -170,18 +143,12 @@ const getAllProperties = function (options, limit = 10) {
     queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
   }
 
-  // 4
   queryParams.push(limit);
   queryString += `
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
 
-  // 5
-  console.log(options);
-  console.log(queryString, queryParams);
-
-  // 6
   return pool.query(queryString, queryParams).then((res) => res.rows);
 };
 
